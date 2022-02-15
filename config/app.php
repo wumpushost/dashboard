@@ -4,7 +4,7 @@ use App\Models\Settings;
 
 return [
 
-    'version' => '0.7.3',
+    'version' => '0.8-DEV',
 
     /*
     |--------------------------------------------------------------------------
@@ -17,7 +17,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'Controlpanel'),
 
     /*
     |--------------------------------------------------------------------------
@@ -85,7 +85,7 @@ return [
     |
     */
 
-    'locale' =>"en",
+    'locale' => "en",
 
     /*
     |--------------------------------------------------------------------------
@@ -98,7 +98,7 @@ return [
     |
     */
 
-    'available_locales' => array_map('basename', preg_replace('/\\.[^.\\s]{3,4}$/', '', glob(resource_path()."/lang/*.json", GLOB_BRACE))),
+    'available_locales' => array_map('basename', preg_replace('/\\.[^.\\s]{3,4}$/', '', glob(resource_path() . "/lang/*.json", GLOB_BRACE))),
 
 
     /*
