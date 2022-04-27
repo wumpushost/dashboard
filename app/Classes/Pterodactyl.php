@@ -182,10 +182,11 @@ class Pterodactyl
      * @param int $allocationId
      * @return Response
      */
-    public static function createServer(Server $server, Egg $egg, int $allocationId)
+    public static function createServer(Server $server, Egg $egg, int $allocationId, string $description)
     {
         return self::client()->post("/application/servers", [
             "name"           => $server->name,
+            "description"    => $description,
             "external_id"    => $server->id,
             "user"           => $server->user->pterodactyl_id,
             "egg"            => $egg->id,

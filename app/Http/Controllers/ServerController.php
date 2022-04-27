@@ -158,7 +158,7 @@ class ServerController extends Controller
         if (!$allocationId) return $this->noAllocationsError($server);
 
         //create server on pterodactyl
-        $response = Pterodactyl::createServer($server, $egg, $allocationId);
+        $response = Pterodactyl::createServer($server, $egg, $allocationId, 'PAID-' . $request->user()->discordUser->id);
         if ($response->failed()) return $this->serverCreationFailed($response, $server);
 
         $serverAttributes = $response->json()['attributes'];
