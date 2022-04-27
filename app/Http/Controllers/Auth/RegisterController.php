@@ -106,15 +106,31 @@ class RegisterController extends Controller
         ]);
 
         if ($response->failed()) {
+            try {
+                $users = Pterodactyl::client()->get('/application/users?filter[email]='.$user->email)->json();
+		if ($users['meta']['pagination']['total'] == 0) {
+		    throw ValidationException::withMessages([
+                        'email' => 'An error occurred while creating your account. Please contact support.'
+                    ]);
+		}
+                $user->update([
+                    'pterodactyl_id' => $users->json()['data'][0]['attributes']['id']
+                ]);
+            } catch (Exception $e) {
+                $user->delete();
+                throw ValidationException::withMessages([
+                    'email' => 'An error occurred while creating your account. Please contact support.'
+                ]);
+            }
             $user->delete();
             throw ValidationException::withMessages([
                 'ptero_registration_error' => [__('Account already exists on Pterodactyl. Please contact the Support!')],
             ]);
-        }
-
-        $user->update([
-            'pterodactyl_id' => $response->json()['attributes']['id']
-        ]);
+        } else {
+            $user->update([
+                'pterodactyl_id' => $response->json()['attributes']['id']
+            ]);
+	}
 
 
 
