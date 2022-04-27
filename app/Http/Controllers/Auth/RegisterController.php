@@ -114,7 +114,7 @@ class RegisterController extends Controller
                     ]);
 		}
                 $user->update([
-                    'pterodactyl_id' => $users->json()['data'][0]['attributes']['id']
+                    'pterodactyl_id' => $users['data'][0]['attributes']['id']
                 ]);
             } catch (Exception $e) {
                 $user->delete();
