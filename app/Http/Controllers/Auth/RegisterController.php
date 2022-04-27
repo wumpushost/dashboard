@@ -122,17 +122,11 @@ class RegisterController extends Controller
                     'email' => 'An error occurred while creating your account. Please contact support.'
                 ]);
             }
-            $user->delete();
-            throw ValidationException::withMessages([
-                'ptero_registration_error' => [__('Account already exists on Pterodactyl. Please contact the Support!')],
-            ]);
         } else {
             $user->update([
                 'pterodactyl_id' => $response->json()['attributes']['id']
             ]);
 	}
-
-
 
         return $user;
     }
