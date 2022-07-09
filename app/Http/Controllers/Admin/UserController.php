@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Settings;
 use App\Models\User;
 use App\Notifications\DynamicNotification;
+use Illuminate\Support\Facades\DB;
 use Spatie\QueryBuilder\QueryBuilder;
 use Exception;
 use Illuminate\Contracts\Foundation\Application;
@@ -52,8 +53,18 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        //QUERY ALL REFERRALS A USER HAS
+        //i am not proud of this at all.
+            $allReferals = array();
+            $referrals = DB::table("user_referrals")->where("referral_id","=",$user->id)->get();
+            foreach($referrals as $referral){
+                array_push($allReferals, $allReferals["id"] = User::query()->findOrFail($referral->registered_user_id));
+            }
+            array_pop($allReferals);
+
         return view('admin.users.show')->with([
-            'user' => $user
+            'user' => $user,
+            'referrals' => $allReferals
         ]);
     }
 
@@ -258,6 +269,9 @@ class UserController extends Controller
             ->addColumn('servers', function (User $user) {
                 return $user->servers->count();
             })
+            ->addColumn('referrals', function (User $user) {
+                return DB::table('user_referrals')->where("referral_id","=",$user->id)->count();
+            })
             ->addColumn('discordId', function (User $user) {
                 return $user->discordUser ? $user->discordUser->id : '';
             })
@@ -304,10 +318,10 @@ class UserController extends Controller
             ->editColumn('name', function (User $user) {
                 return '<a class="text-info" target="_blank" href="' . config("SETTINGS::SYSTEM:PTERODACTYL:URL") . '/admin/users/view/' . $user->pterodactyl_id . '">' . strip_tags($user->name) . '</a>';
             })
-            ->orderColumn('last_seen', function ($query, $order) {
-                $query->orderBy('last_seen', $order);
+            ->orderColumn('last_seen', function ($query) {
+                $query->orderBy('last_seen', "desc");
             })
-            ->rawColumns(['avatar', 'name', 'credits', 'role', 'usage', 'actions', 'last_seen'])
+            ->rawColumns(['avatar', 'name', 'credits', 'role', 'usage', 'referrals', 'actions', 'last_seen'])
             ->make(true);
     }
 }

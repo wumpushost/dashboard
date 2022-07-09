@@ -59,7 +59,7 @@ if (isset($_POST['checkGeneral'])) {
 
 
     setEnvironmentValue("APP_NAME", $appname);
-    setEnvironmentValue("APP_URL", $url);
+    setEnvironmentValue("APP_URL", $appurl);
 
     header("LOCATION: index.php?step=4");
 
@@ -269,8 +269,8 @@ if (isset($_POST['createUser'])) {
     }
 
 
-
-    $query1 = "INSERT INTO `" . getEnvironmentValue("DB_DATABASE") . "`.`users` (`name`, `role`, `credits`, `server_limit`, `pterodactyl_id`, `email`, `password`, `created_at`) VALUES ('$name', 'admin', '250', '1', '$pteroID', '$mail', '$pass', CURRENT_TIMESTAMP)";
+    $random = generateRandomString();
+    $query1 = "INSERT INTO `" . getEnvironmentValue("DB_DATABASE") . "`.`users` (`name`, `role`, `credits`, `server_limit`, `pterodactyl_id`, `email`, `password`, `created_at`, `referral_code`) VALUES ('$name', 'admin', '250', '1', '$pteroID', '$mail', '$pass', CURRENT_TIMESTAMP, '$random')";
 
 
 

@@ -49,10 +49,12 @@
                     <a href="{{ route('home') }}" class="nav-link"><i
                             class="fas fa-home mr-2"></i>{{ __('Home') }}</a>
                 </li>
+                @if(config('SETTINGS::DISCORD:INVITE_URL'))
                 <li class="nav-item d-none d-sm-inline-block">
                     <a href="{{ config('SETTINGS::DISCORD:INVITE_URL') }}" class="nav-link" target="__blank"><i
                             class="fab fa-discord mr-2"></i>{{ __('Discord') }}</a>
                 </li>
+                @endif
                 <!-- Language Selection -->
                 @if (config('SETTINGS::LOCALE:CLIENTS_CAN_CHANGE') == 'true')
                     <li class="nav-item dropdown">
@@ -110,6 +112,9 @@
                         <div class="dropdown-divider"></div>
                         <a href="{{ route('notifications.index') }}"
                             class="dropdown-item dropdown-footer">{{ __('See all Notifications') }}</a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ route('notifications.readAll') }}"
+                           class="dropdown-item dropdown-footer">{{ __('Mark all as read') }}</a>
                     </div>
                 </li>
 
@@ -180,7 +185,7 @@
             <!-- Brand Logo -->
             <a href="{{ route('home') }}" class="brand-link">
                 <img width="64" height="64"
-                    src="{{ \Illuminate\Support\Facades\Storage::disk('public')->exists('icon.png')? asset('storage/icon.png'): asset('images/bitsec.png') }}"
+                    src="{{ \Illuminate\Support\Facades\Storage::disk('public')->exists('icon.png')? asset('storage/icon.png'): asset('images/controlpanel_logo.png') }}"
                     alt="{{ config('app.name', 'Laravel') }} Logo" class="brand-image img-circle"
                     style="opacity: .8">
                 <span class="brand-text font-weight-light">{{ config('app.name', 'Laravel') }}</span>
