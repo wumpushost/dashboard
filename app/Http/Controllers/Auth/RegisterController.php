@@ -87,7 +87,8 @@ class RegisterController extends Controller
      * Create a unique Referral Code for User
      * @return string
      */
-    protected function createReferralCode(){
+    protected function createReferralCode()
+    {
         $referralcode = STR::random(8);
         if (User::where('referral_code', '=', $referralcode)->exists()) {
             $this->createReferralCode();
@@ -103,6 +104,14 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+        $users = Pterodactyl::client()->get('/application/users?filter[email]=' . $data['email'])->json();
+
+        if ($users['meta']['pagination']['total'] == 0) {
+            throw ValidationException::withMessages([
+                'email' => 'You do not have a registered account on our panel. Please join our discord server.'
+            ]);
+        }
+
         $user = User::create([
             'name'         => $data['name'],
             'email'        => $data['email'],
@@ -110,49 +119,15 @@ class RegisterController extends Controller
             'server_limit' => config('SETTINGS::USER:INITIAL_SERVER_LIMIT', 1),
             'password'     => Hash::make($data['password']),
             'referral_code' => $this->createReferralCode(),
-
+            'pterodactyl_id' => $users['data'][0]['attributes']['id'],
         ]);
-
-        $response = Pterodactyl::client()->post('/application/users', [
-            "external_id" => App::environment('local') ? Str::random(16) : (string)$user->id,
-            "username"    => $user->name,
-            "email"       => $user->email,
-            "first_name"  => $user->name,
-            "last_name"   => $user->name,
-            "password"    => $data['password'],
-            "root_admin"  => false,
-            "language"    => "en"
-        ]);
-
-        if ($response->failed()) {
-            try {
-                $users = Pterodactyl::client()->get('/application/users?filter[email]='.$user->email)->json();
-		if ($users['meta']['pagination']['total'] == 0) {
-		    throw ValidationException::withMessages([
-                        'email' => 'An error occurred while creating your account. Please contact support.'
-                    ]);
-		}
-                $user->update([
-                    'pterodactyl_id' => $users['data'][0]['attributes']['id']
-                ]);
-            } catch (Exception $e) {
-                $user->delete();
-                throw ValidationException::withMessages([
-                    'email' => 'An error occurred while creating your account. Please contact support.'
-                ]);
-            }
-        } else {
-            $user->update([
-                'pterodactyl_id' => $response->json()['attributes']['id']
-            ]);
-        }
 
         //INCREMENT REFERRAL-USER CREDITS
-        if(!empty($data['referral_code'])){
+        if (!empty($data['referral_code'])) {
             $ref_code = $data['referral_code'];
             $new_user = $user->id;
-            if($ref_user = User::query()->where('referral_code', '=', $ref_code)->first()) {
-                if(config("SETTINGS::REFERRAL:MODE") == "sign-up" || config("SETTINGS::REFERRAL:MODE") == "both") {
+            if ($ref_user = User::query()->where('referral_code', '=', $ref_code)->first()) {
+                if (config("SETTINGS::REFERRAL:MODE") == "sign-up" || config("SETTINGS::REFERRAL:MODE") == "both") {
                     $ref_user->increment('credits', config("SETTINGS::REFERRAL::REWARD"));
                     $ref_user->notify(new ReferralNotification($ref_user->id, $new_user));
 
@@ -160,7 +135,7 @@ class RegisterController extends Controller
                     activity()
                         ->performedOn($user)
                         ->causedBy($ref_user)
-                        ->log('gained '. config("SETTINGS::REFERRAL::REWARD").' '.config("SETTINGS::SYSTEM:CREDITS_DISPLAY_NAME").' for sign-up-referral of '.$user->name.' (ID:'.$user->id.')');
+                        ->log('gained ' . config("SETTINGS::REFERRAL::REWARD") . ' ' . config("SETTINGS::SYSTEM:CREDITS_DISPLAY_NAME") . ' for sign-up-referral of ' . $user->name . ' (ID:' . $user->id . ')');
                 }
                 //INSERT INTO USER_REFERRALS TABLE
                 DB::table('user_referrals')->insert([
@@ -170,7 +145,6 @@ class RegisterController extends Controller
                     'updated_at' => Carbon::now()
                 ]);
             }
-
         }
 
         return $user;
